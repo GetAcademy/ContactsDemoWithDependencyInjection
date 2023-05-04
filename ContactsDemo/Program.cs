@@ -2,7 +2,6 @@ using ContactsDemo.Model;
 using ContactsDemoWithDependencyInjection;
 
 /*
-
 1: Skrive om vår funksjonalitet til Service-klasse som baserer seg 
    på en underliggende tjeneste for å skrive til og lese fra fil 
    (via interface)
@@ -13,8 +12,8 @@ using ContactsDemoWithDependencyInjection;
     - AddSingleton
 3: Skrive om koden til å bruke vår Service klasse via DI-motor
 4: SQL?
-
  */
+
 var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddScoped<IService, MyService>();
 builder.Services.AddScoped<ContactService>();
