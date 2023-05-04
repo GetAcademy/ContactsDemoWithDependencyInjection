@@ -1,7 +1,8 @@
-using System.Text.Json;
-using ContactsDemo.Model;using ContactsDemoWithDependencyInjection;
+using ContactsDemo.Model;
+using ContactsDemoWithDependencyInjection;
 
 /*
+
 1: Skrive om vår funksjonalitet til Service-klasse som baserer seg 
    på en underliggende tjeneste for å skrive til og lese fra fil 
    (via interface)
@@ -14,30 +15,27 @@ using ContactsDemo.Model;using ContactsDemoWithDependencyInjection;
 4: SQL?
 
  */
-
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddScoped<IService, MyService>();
+//builder.Services.AddScoped<IService, MyService>();
+builder.Services.AddScoped<ContactService>();
+builder.Services.AddScoped<IContactRepository, FileContactRepository>();
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-var fileContactRepository = new FileContactRepository();
-var contactService = new ContactService(fileContactRepository);
-
-app.MapGet("/contacts", (IService service) =>
+app.MapGet("/contacts", (ContactService contactService) =>
 {
-    service.DoSomething();
     return contactService.Read();
 });
-app.MapPost("/contacts", (Contact contact) =>
+app.MapPost("/contacts", (Contact contact, ContactService contactService) =>
 {
     contactService.Create(contact);
 });
-app.MapDelete("/contacts/{id}", (string id) =>
+app.MapDelete("/contacts/{id}", (string id, ContactService contactService) =>
 {
    contactService.Delete(id);
 });
-app.MapPut("/contacts", (Contact contactFromFrontend) =>
+app.MapPut("/contacts", (Contact contactFromFrontend, ContactService contactService) =>
 {
     contactService.Update(contactFromFrontend);
 });
