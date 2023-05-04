@@ -1,0 +1,117 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        const model = {
+            inputs: {
+                id: null,
+                firstName: null,
+                email: null,
+            },
+            contacts: [
+            //    { id: '1', firstName: 'Per', email: 'per@mail.com' },
+            //    { id: '2', firstName: 'Pål', email: 'paal@mail.com' },
+            //    { id: '3', firstName: 'Espen', email: 'espen@mail.com' },
+            ],
+        };
+
+        function updateView() {
+            document.getElementById('app').innerHTML = /*HTML*/`
+                <ul>
+                    ${createContactsHtml()}
+                </ul>
+                <hr/>
+                Fornavn:<br/>
+                <input
+                    type="text"
+                    oninput="model.inputs.firstName=this.value"
+                    value="${model.inputs.firstName || ''}"
+                /><br/>
+                E-post:<br/>
+                <input
+                    type="text"
+                    oninput="model.inputs.email=this.value"
+                    value="${model.inputs.email || ''}"
+                /><br/>
+
+                <button onclick="createOrUpdatePerson()">
+                    ${model.inputs.id == null ? 'Lag ny' : 'Rediger'}
+                </button>
+            `;
+        }
+
+
+
+        function createContactsHtml() {
+            return model.contacts.map(p => /*HTML*/`
+                <li>
+                    ${p.firstName}
+                    ${p.email}
+                    <button onclick="editPerson('${p.id}')">rediger</button>
+                    <button onclick="deletePerson('${p.id}')">x</button>
+                </li >
+                `).join('');
+        }
+
+        // controller
+        getData();
+        async function getData() {
+            let response = await axios.get('/contacts');
+            model.contacts = response.data;
+            updateView();
+        }
+
+        function createOrUpdatePerson() {
+            if (model.inputs.id == null) createPerson();
+            else updatePerson();
+            model.inputs = {
+                id: null,
+                firstName: null,
+                email: null,
+            };
+            updateView();
+        }
+
+        async function createPerson() {
+            const contact = {
+                id: Math.random().toString(16).slice(2),
+                firstName: model.inputs.firstName,
+                email: model.inputs.email,
+            };
+            let response = await axios.post('/contacts', contact);
+            getData();
+        }
+
+        async function updatePerson(){
+            const contact = model.contacts.find(p => p.id == model.inputs.id);
+            if (contact == null) return;
+            contact.firstName = model.inputs.firstName;
+            contact.email = model.inputs.email;
+            let response = await axios.put('/contacts', contact);
+            getData();
+        }
+
+        async function deletePerson(id) {
+            let response = await axios.delete('/contacts/' + id);
+            let wasDeleted = response.data;
+            getData();
+        }
+
+        function editPerson(id) {
+            const person = model.contacts.find(p => p.id == id);
+            if (person == null) return;
+            model.inputs.id = person.id;
+            model.inputs.firstName = person.firstName;
+            model.inputs.email = person.email;
+            updateView();
+        }
+
+    </script>
+</body>
+
+</html>
